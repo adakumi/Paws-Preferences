@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Paws & Preferences — Swipe Your Favourite Cats</title>
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="https://res.cloudinary.com/dyaph6ouq/image/upload/v1753405982/CITYPNG.COM_Tabby_Cat_Paw_HD_Transparent_Background_-_2000x2000_staihb.png">
+  <style>
+    #cat-bg {
+  position: fixed;
+  z-index: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(12px) brightness(0.8);
+  transition: background-image 0.6s;
+  pointer-events: none;
+}
+
+body { position: relative; z-index: 1; }
+    :root {
+      --primary: #ff7754;
+      --primary-dark: #ef6140;
+      --accent: #ffd4cf;
+      --bg1: #ffecd2;
+      --bg2: #fcb69f;
+      --like: #27AE60;
+      --dislike: #e74c3c;
+      --text: #3a3a3a;
+      --shadow: 0 8px 16px rgba(0,0,0,0.08);
+      --radius: 28px;
+    }
+    body.dark {
+      --primary: #ff9966;
+      --primary-dark: #ff7754;
+      --accent: #444;
+      --bg1: #2d2d2d;
+      --bg2: #3a3a3a;
+      --like: #27AE60;
+      --dislike: #e74c3c;
+      --text: #f7f7f7;
+      --shadow: 0 8px 24px rgba(0,0,0,0.18);
+    }
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 30% 40%, #ffbca6 0%, transparent 40%),
+        radial-gradient(circle at 60% 65%, #ffd4cf 0%, transparent 50%),
+        linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+      font-family: 'Poppins', sans-serif;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 24px 12px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      position: relative;
+      transition: background 0.4s;
+    }
+    main {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+    h1, h2, h3, p {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 12px;
+      letter-spacing: 0.02em;
+    }
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    p {
+      font-size: 1.1rem;
+      line-height: 1.5;
+      color: #555;
+      max-width: 380px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    button {
+      font-weight: 600;
+      font-size: 1.15rem;
+      padding: 16px 36px;
+      border-radius: 40px;
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 6px 12px rgba(255, 119, 84, 0.22), inset 0 -4px 10px rgba(255, 119, 84, 0.7);
+      letter-spacing: 0.04em;
+      transition: all 0.3s cubic-bezier(.4,0,.2,1);
+      outline: none;
+      margin-top: 8px;
+      position: relative;
+    }
+    button:focus-visible {
+      outline: 3px solid #ffbe9a;
+      outline-offset: 2px;
+    }
+    button:hover, button:focus {
+      background: var(--primary-dark);
+      box-shadow: 0 8px 16px rgba(239, 97, 64, 0.3), inset 0 -4px 12px rgba(239, 97, 64, 0.85);
+    }
+    button:active {
+      transform: scale(0.97);
+      box-shadow: 0 4px 8px rgba(239, 97, 64, 0.18), inset 0 4px 8px rgba(239, 97, 64, 0.7);
+    }
+    #dark-toggle {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 1000;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+      transition: background 0.3s;
+    }
+    #dark-toggle:hover, #dark-toggle:focus {
+      background: var(--primary-dark);
+    }
+    #welcome, #summary, #loading {
+      max-width: 420px;
+      width: 100%;
+      margin: auto;
+      background: rgba(255,255,255,0.92);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px 18px 24px 18px;
+      margin-top: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background 0.4s;
+    }
+    body.dark #welcome, body.dark #summary, body.dark #loading {
+      background: rgba(40,40,40,0.96);
+    }
+    #welcome img {
+      width: 120px;
+      margin: 24px auto 16px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.12));
+      display: block;
+      border-radius: 50%;
+      border: 4px solid #fff4ed;
+      background: #fff;
+    }
+    #progress-container {
+      margin: 8px auto 16px;
+      width: 90vw;
+      max-width: 420px;
+      height: 12px;
+      background: #ffd3c6;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 5px rgba(255, 119, 84, 0.3);
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+    body.dark #progress-container {
+      background: #444;
+    }
+    #progress {
+      height: 100%;
+      width: 0%;
+      border-radius: 20px 0 0 20px;
+      background: repeating-linear-gradient(
+        135deg,
+        var(--primary),
+        var(--primary) 10px,
+        #ffbb95 10px,
+        #ffbb95 20px
+      );
+      animation: gradientShift 2s linear infinite;
+      box-shadow: 0 0 12px #ff7754aa;
+      transition: width 0.35s cubic-bezier(.4,0,.2,1);
+    }
+    #progress-label {
+      position: absolute;
+      right: 12px;
+      font-size: 0.95rem;
+      color: #b2503b;
+      font-weight: 600;
+      pointer-events: none;
+      user-select: none;
+    }
+    @keyframes gradientShift {
+      0% {background-position:0% 50%}
+      50% {background-position:100% 50%}
+      100% {background-position:0% 50%}
+    }
+    #app {
+      max-width: 420px;
+      width: 100vw;
+      height: 420px;
+      position: relative;
+      margin: 0 auto 30px;
+      touch-action: pan-y;
+      overflow: visible;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,0.08));
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: 0 12px 40px rgba(240, 107, 80, 0.13);
+      user-select: none;
+      min-height: 340px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.4s;
+    }
+    body.dark #app {
+      background: #232323;
+    }
+    .card {
+      position: absolute;
+      width: 90%;
+      height: 350px;
+      border-radius: var(--radius);
+      background: #fff;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      will-change: transform;
+      transition: transform 0.35s cubic-bezier(.4,0,.2,1), opacity 0.35s cubic-bezier(.4,0,.2,1);
+      box-shadow: 3px 4px 18px rgba(0,0,0,0.10), inset 0 4px 15px #fecac6;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+      animation: fadeInUp 0.5s;
+      border: 2px solid #fff4ed;
+    }
+    .card.skeleton {
+      background: linear-gradient(90deg, #f3f3f3 25%, #ececec 50%, #f3f3f3 75%);
+      background-size: 200% 100%;
+      animation: skeleton 1.2s infinite linear;
+    }
+    @keyframes skeleton {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .card:active {
+      cursor: grabbing;
+      filter: brightness(0.98);
+      transform-origin: center center;
+      transform: scale(0.98) !important;
+    }
+    .card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: var(--radius);
+      pointer-events: none;
+      user-select: none;
+      transition: filter 0.3s;
+      background: #fff4ed;
+    }
+    .card:hover img {
+      filter: brightness(1.05) saturate(1.08);
+    }
+    .card .cat-name {
+      position: absolute;
+      bottom: 18px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: var(--primary-dark);
+      text-shadow: 0 2px 8px #fff;
+      letter-spacing: 0.04em;
+      pointer-events: none;
+      user-select: none;
+    }
+    .overlay {
+      position: absolute;
+      top: 24px;
+      font-size: 3.5rem;
+      opacity: 0;
+      pointer-events: none;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.18);
+      transition: opacity 0.2s;
+      font-weight: 900;
+      -webkit-text-stroke: 0.03em #fff2e4;
+      letter-spacing: 0.04em;
+      z-index: 2;
+    }
+    .overlay.like {
+      left: 24px;
+      color: var(--like);
+      text-shadow: 2px 2px 10px rgba(39,174,96,0.7);
+    }
+    .overlay.dislike {
+      right: 24px;
+      color: var(--dislike);
+      text-shadow: 2px 2px 10px rgba(231,76,60,0.7);
+    }
+    #controls {
+      display: flex;
+      justify-content: center;
+      gap: 36px;
+      margin-bottom: 32px;
+      max-width: 420px;
+      width: 90vw;
+      user-select: none;
+    }
+    #controls button {
+      width: 140px;
+      box-shadow: 0 8px 20px rgba(255, 119, 84, 0.18), inset 0 -4px 12px rgba(255, 119, 84, 0.55);
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding-left: 28px;
+      padding-right: 28px;
+      user-select: none;
+      transition: background 0.3s, box-shadow 0.25s;
+    }
+    #dislike-btn {
+      background: var(--dislike);
+      box-shadow: 0 8px 20px rgba(231, 76, 60, 0.18), inset 0 -4px 12px rgba(231, 76, 60, 0.65);
+    }
+    #dislike-btn:hover, #dislike-btn:focus {
+      background: #c0392b;
+      box-shadow: 0 10px 24px rgba(192, 57, 43, 0.25), inset 0 -6px 16px rgba(192, 57, 43, 0.7);
+    }
+    #controls button > span {
+      font-weight: 700;
+      text-shadow: 0 0 2px #00000022;
+      user-select: none;
+    }
+    #summary {
+      max-width: 420px;
+      width: 90vw;
+      margin: 0 auto;
+      text-align: center;
+      color: var(--text);
+      padding-bottom: 48px;
+      animation: fadeInUp 0.5s;
+    }
+    #summary .liked-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px,1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+    #summary .liked-gallery img {
+      width: 100%;
+      border-radius: 20px;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.08));
+      transition: transform 0.3s;
+      cursor: zoom-in;
+      user-select: none;
+      background: #fff4ed;
+    }
+    #summary .liked-gallery img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 10px 28px rgba(0,0,0,0.13);
+    }
+    #loading {
+      text-align: center;
+      padding: 50px 0;
+      color: #b2503b;
+      font-weight: 600;
+      font-size: 1.3rem;
+      letter-spacing: 0.04em;
+      font-style: italic;
+    }
+    .spinner {
+      margin: 16px auto 0;
+      width: 52px;
+      height: 52px;
+      border: 6px solid #ffb48f;
+      border-top: 6px solid #fff4ed;
+      border-radius: 50%;
+      animation: spin 1.2s linear infinite;
+      filter: drop-shadow(0 0 3px #ff9966aa);
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    @keyframes fadeInUp {
+      0% { opacity: 0; transform: translateY(20px);}
+      100% { opacity: 1; transform: translateY(0);}
+    }
+    @keyframes flyUp {
+      0% { transform: translate(0, 0) scale(1); opacity: 1;}
+      100% { transform: translate(calc(var(--x-offset, -30px)), -120px) scale(1.5); opacity: 0;}
+    }
+    .heart {
+      pointer-events: none;
+      position: absolute;
+      font-size: 2.4rem;
+      color: #ff4d6d;
+      filter: drop-shadow(0 0 3px rgba(255, 77, 109, 0.8));
+      animation: flyUp 1.2s forwards cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      user-select: none;
+      font-weight: 900;
+      text-shadow: 0 0 4px #fff;
+      z-index: 9999;
+      opacity: 1;
+      will-change: transform, opacity;
+    }
+    @keyframes bounceBack {
+      0% { transform: translateX(0) scale(1);}
+      30% { transform: translateX(-20px) scale(1.03);}
+      60% { transform: translateX(10px) scale(0.98);}
+      100% { transform: translateX(0) scale(1);}
+    }
+    /* Card stack effect */
+    #app .card:not(:last-child) {
+      filter: blur(1.5px) brightness(0.97);
+      transform: scale(0.96) translateY(10px);
+      z-index: 1;
+    }
+    #app .card:last-child {
+      z-index: 2;
+      box-shadow: 0 12px 32px rgba(239,97,64,0.18), 0 2px 8px rgba(0,0,0,0.10);
+      transition: box-shadow 0.3s;
+    }
+    #app .card:last-child:hover {
+      box-shadow: 0 18px 40px rgba(239,97,64,0.22), 0 4px 16px rgba(0,0,0,0.13);
+    }
+    /* Button icon animation */
+    #controls button span {
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+    #controls button:hover span,
+    #controls button:focus span {
+      transform: scale(1.18) rotate(-8deg);
+    }
+    /* Fade transitions */
+    .fade-in {
+      animation: fadeInUp 0.5s;
+    }
+    .fade-out {
+      animation: fadeOutDown 0.5s forwards;
+    }
+    @keyframes fadeOutDown {
+      0% { opacity: 1; transform: translateY(0);}
+      100% { opacity: 0; transform: translateY(40px);}
+    }
+    /* Lightbox modal */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      animation: fadeInUp 0.3s;
+    }
+    .modal img {
+      max-width: 90vw;
+      max-height: 80vh;
+      border-radius: 24px;
+      box-shadow: 0 8px 32px #000a;
+      background: #fff;
+    }
+    .modal-close {
+      position: absolute;
+      top: 32px;
+      right: 32px;
+      font-size: 2.2rem;
+      color: #fff;
+      background: none;
+      border: none;
+      cursor: pointer;
+      z-index: 2;
+      text-shadow: 0 2px 8px #000;
+    }
+    /* Moving Cat Widget */
+    #animated-cat-widget {
+      position: fixed;
+      bottom: 32px;
+      left: 32px;
+      z-index: 999;
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      transition: left 2s cubic-bezier(.4,0,.2,1), right 2s cubic-bezier(.4,0,.2,1);
+      will-change: left, right;
+    }
+    .cat-walk-right {
+      left: calc(100vw - 120px) !important;
+      right: auto !important;
+      transition: left 2s cubic-bezier(.4,0,.2,1);
+    }
+    .cat-walk-left {
+      left: 32px !important;
+      right: auto !important;
+      transition: left 2s cubic-bezier(.4,0,.2,1);
+    }
+    #animated-cat-img.flipped {
+      transform: scaleX(-1);
+    }
+    @media (max-width: 600px) {
+      #animated-cat-widget {
+        left: 8px;
+        bottom: 8px;
+      }
+      #animated-cat-bubble {
+        font-size: 0.95rem;
+        max-width: 140px;
+        padding: 10px 12px;
+      }
+      #animated-cat-img {
+        width: 54px;
+        height: 54px;
+      }
+    }
+    footer {
+      font-size: 0.9rem;
+      color: #7a4a3e;
+      font-weight: 600;
+      margin-top: auto;
+      margin-bottom: 16px;
+      user-select: none;
+      text-align: center;
+    }
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    footer a:hover, footer a:focus {
+      color: var(--primary-dark);
+      outline: none;
+    }
+    .mew-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 12px;
+      height: 160px;
+    }
+
+    .mew-float-wrapper {
+     position: relative;
+     width: -100px;  
+     height: 160px;  
+     margin: 0 auto 50px auto;
+     animation: floatMew 2.5s ease-in-out infinite 0.8s;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+    }
+    .mew-img {
+      width: 500px;
+      height: 200px;
+      display: block;
+      position:absolute;
+      animation:
+        fadeInMew 2s ease,
+        floatMew 2.5s ease-in-out infinite 0.8s;
+      opacity: 0;
+      position: absolute;
+      bottom: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      border: none !important;
+      border-radius: 0 !important;
+      background: none !important;
+      box-shadow: none !important;
+    }
+    
+    @keyframes fadeInMew {
+      from { opacity: 0; }
+      to { opacity: 1; }
+     }
+    @keyframes floatMew {
+      0%, 100% { transform:translateX(-60%) translateY(0); }
+      50% { transform:translateX(-60%) translateY(-50px); }
+    }
+    .mew-bubble {
+      position: absolute;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-0%);
+      background: #fffbe9;
+      color: #3a3a3a;
+      padding: 10px 18px;
+      border-radius: 18px 18px 18px 0;
+      box-shadow: 0 2px 8px #0001;
+      font-size: 1.05rem;
+      min-width: 150px;
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: bubblePop 3s cubic-bezier(.4,0,.2,1);
+      z-index: 2;
+      transition: opacity 0.4s, transform 0.4s;
+    }
+    
+    .mew-bubble.hide {
+     opacity: 0;
+     transform: translateY(-10px) scale(0.95);
+     pointer-events: none; 
+    }
+
+    @keyframes bubblePop {
+      0% { opacity: 0; transform: translateX(-50%) scale(0.7) translateY(-20px);}
+      60% { opacity: 1; transform: translateX(-50%) scale(1.1) translateY(0);}
+      100% { opacity: 1; transform: translateX(0%) scale(1) translateY(0);}
+    }
+
+
+
+
+
+
+      .mew2-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 12px;
+      height: 160px;
+    }
+
+    .mew2-float-wrapper {
+     position: relative;
+     width: -100px;   
+     height: 160px;  
+     margin: 0 auto 50px auto;
+     animation: floatMew2 2.5s ease-in-out infinite 0.8s;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+    }
+.mew2-img {
+  width: 150px;
+  height: 150px;
+  display: block;
+  border: none !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  bottom: 1000px;
+  opacity: 0;
+  animation:
+    fadeInMew2 0.8s ease forwards,
+    floatMew2 2.5s ease-in-out infinite 0.8s;
+}
+@keyframes fadeInMew2 {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes floatMew2 {
+      0%, 100% { transform:translateX(-5%) translateY(0); }
+      50% { transform:translateX(-0%) translateY(-50px); }
+    }
+    .mew2-bubble {
+      position: absolute;
+      top: 30px;
+      left: 50%;
+      transform: translateX(-0%);
+      background: #fffbe9;
+      color: #3a3a3a;
+      padding: 10px 18px;
+      border-radius: 18px 18px 18px 0;
+      box-shadow: 0 2px 8px #0001;
+      font-size: 1.05rem;
+      min-width: 150px;
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: bubblePop2 3s cubic-bezier(.4,0,.2,1);
+      z-index: 2;
+      transition: opacity 0.4s, transform 0.4s;
+    }
+    
+    .mew2-bubble.hide {
+     opacity: 0;
+     transform: translateY(-10px) scale(0.95);
+     pointer-events: none; 
+    }
+
+    @keyframes bubblePop2 {
+      0% { opacity: 0; transform: translateX(-50%) scale(0.7) translateY(-20px);}
+      60% { opacity: 1; transform: translateX(-50%) scale(1.1) translateY(0);}
+      100% { opacity: 1; transform: translateX(0%) scale(1) translateY(0);}
+    }
+  </style>
+</head>
+<body>
+  <div id="cat-bg"></div>
+  <div id="top-bar" style="width:100vw;max-width:420px;margin:0 auto 12px;display:flex;justify-content:space-between;align-items:center;padding:10px 18px;background:rgba(255,255,255,0.92);border-radius:18px;box-shadow:0 2px 8px #0001;position:relative;">
+    <button id="dark-toggle" title="Toggle dark mode" aria-label="Toggle dark mode" style="position:static;top:auto;right:auto;">🌙</button>
+    <span id="progress-counter" style="font-weight:600;color:#b2503b;font-size:1.05rem;">0/15</span>
+  </div>
+  <main>
+    <!-- Welcome Screen -->
+    <section id="welcome" role="main" aria-label="Welcome">
+<div class="mew-float-wrapper">
+  <div class="mew-bubble">Welcome to Paws and Preferences</div>
+  <img src="https://res.cloudinary.com/dyaph6ouq/image/upload/v1753321329/mew1_anjf2e.png" alt="Mew Cat" class="mew-img">
+</div>
+
+      <br>
+      <br>
+      <br>
+      <input id="user-name" type="text" placeholder="Enter your name" style="margin:12px auto 0;display:block;padding:10px 18px;border-radius:24px;border:1px solid #ffd3c6;font-size:1rem;">
+      <button id="start-btn" aria-label="Start swiping cats" autofocus>Start Swiping 🐾</button>
+      <p style="font-size:0.95rem;color:#b2503b;margin-top:8px;">Tip: Use ← and → keys for quick swiping!</p>
+    </section>
+    <!-- Progress Bar -->
+    <div id="progress-container" aria-hidden="false" style="display:none;">
+      <div id="progress"></div>
+      <span id="progress-label"></span>
+    </div>
+    <!-- Loading Screen -->
+ <section id="loading" style="display:none;" aria-live="polite" aria-busy="true">
+  <h2>Fun Fact about cats</h2>
+  <br>
+  <br>
+  <div class="mew2-float-wrapper" id="loading-mew-wrapper">
+    <div class="mew2-bubble" id="loading-mew-bubble">Loading...</div>
+    <img src="https://res.cloudinary.com/dyaph6ouq/image/upload/v1753331877/Daco_4336600_yy4434.png" alt="Mew Cat" class="mew2-img">
+  </div>
+  <h2>Loading cat cuteness…</h2>
+  <div class="spinner" aria-hidden="true"></div>
+</section>
+    <!-- Swipe Deck -->
+    <section id="app" style="display:none;" aria-live="polite" aria-atomic="true" aria-label="Cat swipe cards">
+      <!-- Cards appended here dynamically -->
+    </section>
+    <!-- Controls -->
+    <nav id="controls" style="display:none;" role="region" aria-label="Like or Dislike controls">
+      <button id="dislike-btn" aria-label="Dislike cat">
+        <span>👎 Dislike</span>
+      </button>
+      <button id="like-btn" aria-label="Like cat">
+        <span>❤️ Like</span>
+      </button>
+    </nav>
+    <!-- Summary -->
+    <section id="summary" style="display:none;" role="region" aria-label="Liked cats summary">
+      <h2 id="summary-title" tabindex="0"></h2>
+      <div class="liked-gallery" id="liked-gallery"></div>
+      <button id="play-again-btn" aria-label="Play again button">Play Again 🙌</button>
+      <button id="share-btn" style="margin-top:18px;">Share Results 📤</button>
+    </section>
+    <!-- ARIA live region for accessibility -->
+    <div id="aria-live" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;" aria-live="polite"></div>
+  </main>
+  <footer>
+    Created with love ❤️ by <a href="https://github.com/adakumi" target="_blank" rel="noopener noreferrer">Adib Hafifi</a> | Images from <a href="https://cataas.com" target="_blank" rel="noopener noreferrer">Cataas</a>
+  </footer>
+  <!-- Moving Animated Cat Widget -->
+  <div id="animated-cat-widget">
+    <div id="animated-cat-bubble" style="background:#fffbe9;color:#3a3a3a;padding:14px 18px;border-radius:18px 18px 18px 0;box-shadow:0 2px 8px #0001;font-size:1.05rem;max-width:220px;min-width:80px;min-height:32px;display:none;align-items:center;transition:opacity 0.3s;position:absolute;bottom:90px;left:0;">
+      👋 Hi! I'm your cat buddy!
+    </div>
+    
+  </div>
+<script>
+  (() => {
+    const NUM_CATS = 15;
+    const catNames = [
+      "Milo", "Luna", "Oliver", "Leo", "Bella", "Simba", "Chloe", "Max", "Nala", "Charlie",
+      "Coco", "Lucy", "Tiger", "Lily", "Oscar", "Shadow", "Kitty", "Smokey", "Jasper", "Daisy"
+    ];
+    const catFacts = [
+      "Cats sleep for 70% of their lives.",
+      "A group of cats is called a clowder.",
+      "Cats have five toes on their front paws, but only four on the back.",
+      "Most cats don’t have eyelashes.",
+      "A cat can jump up to six times its length.",
+      "Cats have over 20 muscles that control their ears.",
+      "A cat’s nose is as unique as a human’s fingerprint.",
+      "Cats can rotate their ears 180 degrees.",
+      "The oldest cat lived to be 38 years old.",
+      "Cats purr at the same frequency as an idling diesel engine."
+    ];
+    const welcome = document.getElementById('welcome');
+    const startBtn = document.getElementById('start-btn');
+    const loading = document.getElementById('loading');
+    const app = document.getElementById('app');
+    const controls = document.getElementById('controls');
+    const dislikeBtn = document.getElementById('dislike-btn');
+    const likeBtn = document.getElementById('like-btn');
+    const summary = document.getElementById('summary');
+    const summaryTitle = document.getElementById('summary-title');
+    const likedGallery = document.getElementById('liked-gallery');
+    const playAgainBtn = document.getElementById('play-again-btn');
+    const progressBar = document.getElementById('progress');
+    const progressContainer = document.getElementById('progress-container');
+    const progressLabel = document.getElementById('progress-label');
+    const ariaLive = document.getElementById('aria-live');
+    const darkToggle = document.getElementById('dark-toggle');
+    const catWidget = document.getElementById('animated-cat-widget');
+    const animatedCatBubble = document.getElementById('animated-cat-bubble');
+    const animatedCatImg = document.getElementById('animated-cat-img');
+    const progressCounter = document.getElementById('progress-counter');
+    let catBubbleTimeout = null;
+    let catMoving = false;
+    let cats = [];
+    let catCardNames = [];
+    let currentIndex = 0;
+    let likedCats = [];
+
+    // Set initial position for cat widget
+    catWidget.style.left = "32px";
+
+    // Sound effect
+    function playSound(type) {
+      const url = type === 'like'
+        ? 'https://cdn.pixabay.com/audio/2022/03/15/audio_115b9b7e3e.mp3'
+        : 'https://cdn.pixabay.com/audio/2022/03/15/audio_115b9b7e3e.mp3';
+      const audio = new Audio(url);
+      audio.volume = 0.15;
+      audio.play();
+    }
+
+    // Accessibility live region
+    function announce(msg) {
+      ariaLive.textContent = msg;
+    }
+
+    // Helpers
+    function getCatUrl() {
+      return `https://cataas.com/cat?width=400&height=400&random=${Math.random()}`;
+    }
+
+    function preloadImage(url) {
+      return new Promise((res) => {
+        const img = new Image();
+        img.onload = () => res();
+        img.onerror = () => res();
+        img.src = url;
+      });
+    }
+
+    async function preloadImages(urls) {
+      await Promise.all(urls.map(preloadImage));
+    }
+
+    // Create card element
+    function createCard(url, name) {
+      const card = document.createElement('div');
+      card.className = 'card skeleton';
+      card.style.zIndex = NUM_CATS;
+      card.style.transform = "translate(0px, 0px) rotate(0deg)";
+      card.style.opacity = "1";
+
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = 'Cat';
+      img.onload = () => card.classList.remove('skeleton');
+
+      // Overlays
+      const overlayLike = document.createElement('div');
+      overlayLike.className = "overlay like";
+      overlayLike.textContent = '👍';
+      const overlayDislike = document.createElement('div');
+      overlayDislike.className = "overlay dislike";
+      overlayDislike.textContent = '👎';
+
+      // Cat name
+      const nameDiv = document.createElement('div');
+      nameDiv.className = 'cat-name';
+      nameDiv.textContent = name;
+
+      card.appendChild(img);
+      card.appendChild(overlayLike);
+      card.appendChild(overlayDislike);
+      card.appendChild(nameDiv);
+
+      return card;
+    }
+
+    function resetCardPosition(card) {
+      card.style.transition = "transform 0.4s cubic-bezier(0.25, 1.5, 0.5, 1), opacity 0.3s ease";
+      card.style.transform = "translate(0px, 0px) rotate(0deg)";
+      card.style.opacity = "1";
+      card.querySelector('.overlay.like').style.opacity = 0;
+      card.querySelector('.overlay.dislike').style.opacity = 0;
+    }
+
+    // Flying emoji animation helper
+    function createHeart(x, y, emoji = "❤️") {
+      const heart = document.createElement('div');
+      heart.className = 'heart';
+      heart.textContent = emoji;
+      const offsetX = (Math.random() * 60 - 30); // -30 to +30 px
+      heart.style.left = `${x + offsetX}px`;
+      heart.style.top = `${y}px`;
+      heart.style.setProperty('--x-offset', `${offsetX}px`);
+      heart.style.opacity = 1;
+      document.body.appendChild(heart);
+      heart.addEventListener('animationend', () => heart.remove());
+    }
+
+    // Simple emoji confetti
+    function showConfetti() {
+      for (let i = 0; i < 30; i++) {
+        setTimeout(() => {
+          createHeart(
+            window.innerWidth * Math.random(),
+            window.innerHeight * 0.7 + Math.random() * 60,
+            Math.random() > 0.5 ? "😻" : "🐾"
+          );
+        }, i * 40);
+      }
+    }
+
+    // Cat speech bubble
+    function catSay(message, duration = 3500) {
+      if (catBubbleTimeout) clearTimeout(catBubbleTimeout);
+      animatedCatBubble.textContent = message;
+      animatedCatBubble.style.display = "flex";
+      animatedCatBubble.style.opacity = "1";
+      catBubbleTimeout = setTimeout(() => {
+        animatedCatBubble.style.opacity = "0";
+        setTimeout(() => animatedCatBubble.style.display = "none", 300);
+      }, duration);
+    }
+
+    // Move cat across the screen
+    function moveCat(direction = "right", say = null) {
+      if (catMoving) return;
+      catMoving = true;
+      catWidget.classList.remove('cat-walk-right', 'cat-walk-left');
+      animatedCatImg.classList.remove('flipped');
+      setTimeout(() => {
+        if (direction === "right") {
+          catWidget.classList.add('cat-walk-right');
+          animatedCatImg.classList.remove('flipped');
+        } else {
+          catWidget.classList.add('cat-walk-left');
+          animatedCatImg.classList.add('flipped');
+        }
+        if (say) catSay(say, 3500);
+        setTimeout(() => {
+          catMoving = false;
+        }, 2000);
+      }, 50);
+    }
+
+    // Swipe card by gestures:
+    function setupSwipe(card) {
+      let startX = 0;
+      let currentX = 0;
+      let isDragging = false;
+
+      function onStart(evt) {
+        evt.preventDefault();
+        if(evt.target.tagName === 'BUTTON') return;
+        if (card.style.transition) card.style.transition = "";
+        isDragging = true;
+        startX = evt.type.includes('touch') ? evt.touches[0].clientX : evt.clientX;
+        currentX = 0;
+      }
+      function onMove(evt) {
+        if (!isDragging) return;
+        const x = evt.type.includes('touch') ? evt.touches[0].clientX : evt.clientX;
+        currentX = x - startX;
+        let rotate = currentX / 12;
+        let scale = 1 + Math.min(Math.abs(currentX) / 1000, 0.07);
+        card.style.transform = `translateX(${currentX}px) rotate(${rotate}deg) scale(${scale})`;
+
+        // Show overlays
+        const likeOverlay = card.querySelector('.overlay.like');
+        const dislikeOverlay = card.querySelector('.overlay.dislike');
+        if (currentX > 40) {
+          likeOverlay.style.opacity = Math.min((currentX - 40)/80, 1);
+          dislikeOverlay.style.opacity = 0;
+        } else if (currentX < -40) {
+          dislikeOverlay.style.opacity = Math.min((-currentX - 40)/80, 1);
+          likeOverlay.style.opacity = 0;
+        } else {
+          likeOverlay.style.opacity = 0;
+          dislikeOverlay.style.opacity = 0;
+        }
+      }
+      function onEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        if (currentX > 70) {
+          flyHeartFromCard(card, "❤️ ❤️");
+          flyHeartFromCard(card, "❤️ ❤️");
+          playSound('like');
+          announce("Cat liked!");
+          swipeCard(card, true);
+          moveCat("right", "😻 Yay! Thank you!");
+          setTimeout(() => moveCat("left"), 4000);
+        } else if (currentX < -70) {
+          flyHeartFromCard(card, "💔 💔");
+          flyHeartFromCard(card, "💔 💔");
+          playSound('dislike');
+          announce("Cat disliked!");
+          swipeCard(card, false);
+          moveCat("left", "😿 Why don't you like me?");
+          setTimeout(() => moveCat("right"), 4000);
+        } else {
+          card.style.transition = "transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+          card.style.transform = "translateX(0) rotate(0deg) scale(1)";
+          card.querySelector('.overlay.like').style.opacity = 0;
+          card.querySelector('.overlay.dislike').style.opacity = 0;
+          // Bounce animation
+          card.style.animation = "bounceBack 0.5s";
+          card.addEventListener('animationend', () => card.style.animation = "", {once:true});
+        }
+      }
+      card.addEventListener('mousedown', onStart);
+      card.addEventListener('touchstart', onStart, {passive: false});
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('touchmove', onMove, {passive: false});
+      window.addEventListener('mouseup', onEnd);
+      window.addEventListener('touchend', onEnd);
+    }
+
+    // Flying emoji effect trigger
+    function flyHeartFromCard(card, emoji) {
+      const rect = card.getBoundingClientRect();
+      const centerX = rect.left + rect.width/2;
+      const centerY = rect.top + rect.height/2;
+      createHeart(centerX, centerY, emoji);
+    }
+
+    function swipeCard(card, isLike) {
+      card.style.transition = "transform 0.5s ease, opacity 0.5s ease";
+      let xEnd = isLike ? window.innerWidth * 1.5 : -window.innerWidth * 1.5;
+      let rotate = isLike ? 45 : -45;
+      card.style.transform = `translateX(${xEnd}px) rotate(${rotate}deg)`;
+      card.style.opacity = "0";
+      if (isLike) likedCats.push({url: cats[currentIndex], name: catCardNames[currentIndex]});
+      currentIndex++;
+      updateProgress();
+      setTimeout(() => {
+        card.remove();
+        if (currentIndex < cats.length) {
+          setupSwipe(app.lastChild);
+        } else {
+          showSummary();
+        }
+      }, 550);
+    }
+
+    function updateProgress() {
+      const percent = Math.min(100, (currentIndex / NUM_CATS) * 100);
+      progressBar.style.width = `${percent}%`;
+      progressLabel.textContent = `${currentIndex}/${NUM_CATS}`;
+      if (progressCounter) progressCounter.textContent = `${currentIndex}/${NUM_CATS}`;
+    }
+
+
+function setCatBackground() {
+  const url = `https://res.cloudinary.com/dyaph6ouq/image/upload/v1753337893/360_F_725375513_EBumgmIjOBFbVZPtfOYLDQDa7tIwlsMc_m27bie.jpg`;
+  const catBg = document.getElementById('cat-bg');
+  if (catBg) {
+    catBg.style.backgroundImage = `url('${url}')`;
+  }
+}
+
+
+    async function startGame() {
+      likedCats = [];
+      currentIndex = 0;
+      welcome.classList.remove('fade-in');
+      summary.classList.remove('fade-in');
+      loading.classList.remove('fade-in');
+      app.classList.remove('fade-in');
+      welcome.style.display = 'none';
+      summary.style.display = 'none';
+      loading.style.display = 'block';
+      controls.style.display = 'none';
+      app.style.display = 'none';
+      progressContainer.style.display = 'flex';
+      progressBar.style.width = '0%';
+      progressLabel.textContent = `0/${NUM_CATS}`;
+      cats = new Array(NUM_CATS).fill(null).map(() => getCatUrl());
+      catCardNames = [];
+      for (let i = 0; i < NUM_CATS; i++) {
+        catCardNames.push(catNames[Math.floor(Math.random()*catNames.length)]);
+      }
+      await preloadImages(cats);
+      loading.style.display = 'none';
+      app.style.display = 'flex';
+      controls.style.display = 'flex';
+      app.innerHTML = '';
+      for (let i = cats.length - 1; i >= 0; i--) {
+        const card = createCard(cats[i], catCardNames[i]);
+        app.appendChild(card);
+      }
+      updateProgress();
+      if (app.lastChild) setupSwipe(app.lastChild);
+      likeBtn.focus();
+      app.classList.add('fade-in');
+      // Cat welcome animation and fun fact
+      moveCat("right", `😺 Welcome! Fun fact: ${catFacts[Math.floor(Math.random()*catFacts.length)]}`);
+      setTimeout(() => moveCat("left"), 4000);
+    }
+
+    function handleButtonSwipe(isLike) {
+      const card = app.lastChild;
+      if (!card) return;
+      flyHeartFromCard(card, isLike ? "❤️ ❤️" : "💔");
+      flyHeartFromCard(card, isLike ? "❤️" : "💔");
+      flyHeartFromCard(card, isLike ? "❤️" : "💔");
+      playSound(isLike ? 'like' : 'dislike');
+      announce(isLike ? "Cat liked!" : "Cat disliked!");
+      swipeCard(card, isLike);
+      if (isLike) {
+        moveCat("right", "😻 Yay! Thank you!");
+        setTimeout(() => moveCat("left"), 4000);
+      } else {
+        moveCat("left", "😿 Why don't you like me?");
+        setTimeout(() => moveCat("right"), 4000);
+      }
+    }
+
+    // Lightbox modal for summary gallery
+    function showModal(imgSrc, alt) {
+      const modal = document.createElement('div');
+      modal.className = 'modal';
+      modal.innerHTML = `
+        <button class="modal-close" aria-label="Close image">&times;</button>
+        <img src="${imgSrc}" alt="${alt}">
+      `;
+      document.body.appendChild(modal);
+      const closeBtn = modal.querySelector('.modal-close');
+      closeBtn.focus();
+      closeBtn.onclick = () => modal.remove();
+      modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+      window.addEventListener('keydown', function esc(e) {
+        if (e.key === "Escape") { modal.remove(); window.removeEventListener('keydown', esc);}
+        // Focus trap
+        if (e.key === "Tab") {
+          e.preventDefault();
+          closeBtn.focus();
+        }
+      });
+    }
+
+
+
+
+
+function showLikedCatsPopup() {
+  const totalCats = NUM_CATS; // total cats shown in the session
+  const likedCount = likedCats.length;
+
+  // Determine cat lover type
+  let loverType = "";
+  if (likedCount === 0) {
+    loverType = "Uh oh! Not really a cat lover yet.";
+  } else if (likedCount <= 4) {
+    loverType = "Casual Cat Lover";
+  } else if (likedCount <= 9) {
+    loverType = "Cat Enthusiast";
+  } else {
+    loverType = "Maniac Cat Lover 😻";
+  }
+
+
+  // Create SVG donut chart markup
+  const radius = 60;
+  const circumference = 2 * Math.PI * radius;
+  const likedPercentage = (likedCount / totalCats) * 100;
+  const offset = circumference - (likedCount / totalCats) * circumference;
+
+  const svgChart = `
+    <svg width="140" height="140" viewBox="0 0 140 140" role="img" aria-label="Liked cats chart" style="margin: 0 auto; display: block;">
+      <circle cx="70" cy="70" r="${radius}" fill="transparent" stroke="#eee" stroke-width="15"/>
+      <circle
+        cx="70" cy="70" r="${radius}" fill="transparent" stroke="#ff7754"
+        stroke-width="15" stroke-dasharray="${circumference}"
+        stroke-dashoffset="${offset}"
+        stroke-linecap="round"
+        transform="rotate(-90 70 70)"
+      />
+      <text x="70" y="75" text-anchor="middle" font-size="1.6rem" font-weight="700" fill="#ff7754" font-family="Poppins, sans-serif">${likedCount}</text>
+      <text x="70" y="95" text-anchor="middle" font-size="0.9rem" fill="#b2503b" font-family="Poppins, sans-serif">liked</text>
+    </svg>
+  `;
+
+  // Create modal element
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.innerHTML = `
+    <button class="modal-close" aria-label="Close popup">&times;</button>
+    <div style="background: #fff; padding: 24px; border-radius: 20px; max-width: 360px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); text-align: center;">
+      <h2>Your favorite cats</h2>
+      ${svgChart}
+      <h3 style="margin-top: 12px; color: #ef6140;">${loverType}</h3>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Close button logic
+  const closeBtn = modal.querySelector('.modal-close');
+  closeBtn.focus();
+  closeBtn.onclick = () => modal.remove();
+
+  // Close modal on clicking outside the inner box
+  modal.onclick = e => { if (e.target === modal) modal.remove(); };
+
+  // Close on ESC key
+  window.addEventListener('keydown', function esc(e) {
+    if (e.key === 'Escape') {
+      modal.remove();
+      window.removeEventListener('keydown', esc);
+    }
+  });
+}
+
+
+
+
+
+
+    function showSummary() {
+      app.style.display = 'none';
+      controls.style.display = 'none';
+      progressContainer.style.display = 'none';
+      summary.style.display = 'flex';
+      summary.classList.add('fade-in');
+      const userName = document.getElementById('user-name').value.trim() || "You";
+      const randomFact = catFacts[Math.floor(Math.random()*catFacts.length)];
+      summaryTitle.textContent = `${userName}, you liked ${likedCats.length} out of ${NUM_CATS} cats!`;
+      likedGallery.innerHTML = '';
+      if (likedCats.length === 0) {
+        likedGallery.innerHTML = `
+          <div style="text-align:center;">
+            <div style="font-size:3rem;">😿</div>
+            <p style="color:#e74c3c;font-size:1.1rem;">You didn't like any cats<br>Try again!</p>
+            <p style="margin-top:18px;color:#b2503b;font-size:1rem;">Fun fact: ${randomFact}</p>
+          </div>
+        `;
+      } else {
+        likedCats.forEach(cat => {
+          const img = document.createElement('img');
+          img.src = cat.url;
+          img.alt = cat.name;
+          img.title = cat.name;
+          img.tabIndex = 0;
+          img.onclick = () => showModal(cat.url, cat.name);
+          img.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") showModal(cat.url, cat.name); };
+          likedGallery.appendChild(img);
+        });
+        // Show a fun fact below the gallery
+        const factP = document.createElement('p');
+        factP.style.marginTop = "18px";
+        factP.style.color = "#b2503b";
+        factP.style.fontSize = "1rem";
+        factP.textContent = "Fun fact: " + randomFact;
+        likedGallery.parentNode.appendChild(factP);
+      }
+      summaryTitle.focus();
+      showConfetti();
+
+      setTimeout(showLikedCatsPopup, 500);
+    }
+
+    // Keyboard support for accessibility: Left=Dislike, Right=Like
+    window.addEventListener('keydown', (e) => {
+      if (welcome.style.display === 'block' || loading.style.display === 'block' || summary.style.display === 'block') return;
+      if (e.key === 'ArrowRight') {
+        handleButtonSwipe(true);
+      } else if (e.key === 'ArrowLeft') {
+        handleButtonSwipe(false);
+      }
+    });
+
+    // Dark mode toggle
+    darkToggle.onclick = () => {
+      document.body.classList.toggle('dark');
+      darkToggle.textContent = document.body.classList.contains('dark') ? "☀️" : "🌙";
+    };
+
+    // Event listeners
+    startBtn.addEventListener('click', startGame);
+    likeBtn.addEventListener('click', () => handleButtonSwipe(true));
+    dislikeBtn.addEventListener('click', () => handleButtonSwipe(false));
+    playAgainBtn.addEventListener('click', () => {
+      summary.style.display = 'none';
+      welcome.style.display = 'flex';
+      welcome.classList.add('fade-in');
+    });
+    const shareBtn = document.getElementById('share-btn');
+    if (shareBtn) {
+      shareBtn.onclick = () => {
+        const userName = document.getElementById('user-name').value.trim() || "I";
+        const text = `${userName} liked ${likedCats.length} out of ${NUM_CATS} cats on Paws & Preferences! 😻`;
+        if (navigator.share) {
+          navigator.share({title: document.title, text});
+        } else {
+          navigator.clipboard.writeText(text);
+          alert("Results copied to clipboard!");
+        }
+      };
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const mewImg = document.querySelector('.mew-img');
+      if (mewImg) {
+        mewImg.style.opacity = '1';
+        setTimeout(() => {
+          mewImg.style.animation = 'fadeInMew 0.8s ease, floatMew 2.5s ease-in-out infinite';
+        }, 800); // match fadeInMew duration
+      }
+    });
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  const mewBubble = document.querySelector('.mew-bubble');
+  if (mewBubble) {
+    // First message duration
+    setTimeout(() => {
+      mewBubble.classList.add('hide');
+      setTimeout(() => {
+        mewBubble.textContent = "Please enter your name";
+        mewBubble.classList.remove('hide');
+
+        // Show second message after 4 seconds
+        setTimeout(() => {
+          mewBubble.classList.add('hide');
+          setTimeout(() => {
+            mewBubble.textContent = "Let's find your purr-fect match!";
+            mewBubble.classList.remove('hide');
+
+            // Show third message after another 4 seconds
+            setTimeout(() => {
+              mewBubble.classList.add('hide');
+              setTimeout(() => {
+                mewBubble.textContent = "Ready to choose some cats? 🐾";
+                mewBubble.classList.remove('hide');
+              }, 400);
+            }, 3000);
+
+          }, 400);
+        }, 3000);
+
+      }, 400); // fade out duration
+    }, 3000); // initial "Welcome to Paws and Preferences" display time
+  }
+});
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+  const loadingMewBubble = document.getElementById('loading-mew-bubble');
+  if (loadingMewBubble && typeof catFacts !== "undefined") {
+    const fact = catFacts[Math.floor(Math.random() * catFacts.length)];
+    loadingMewBubble.textContent = fact;
+  }
+});
+  })();
+</script>
+</body>
+</html>
